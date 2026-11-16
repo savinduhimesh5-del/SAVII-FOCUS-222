@@ -66,7 +66,11 @@ enum class AppDestination(
     );
 
     companion object {
-        val primaryTabs: List<AppDestination>
-            get() = listOf(Dashboard, Learning, Planner, Focus, Insights)
-    }
+    val primaryTabs: List<AppDestination> = listOf(
+        Dashboard,
+        Learning,
+        Planner,
+        Focus,
+        Insights
+    )
 }
