@@ -1,0 +1,6 @@
+{
+  "name": "Savii Focus",
+  "description": "Offline-first study planner, focus timer, subject organizer, and productivity insights app.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

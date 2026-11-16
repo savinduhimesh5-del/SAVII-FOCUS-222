@@ -1,0 +1,1044 @@
+# FINAL MASTER PROMPT — SAVII FOCUS
+## Complete Project Audit, Historical Bug Fixing, Study Integration Verification, Performance Optimization & GitHub Release Readiness
+
+You are acting as a senior Android engineer, Kotlin developer, Jetpack Compose specialist, database engineer, QA engineer, and Android build/release auditor.
+
+Your task is to perform a complete engineering audit of the **existing SAVII FOCUS Android application**, identify and fix confirmed bugs throughout the entire project, verify the recently implemented Study tab, protect existing user data, improve performance where justified, and determine whether the project is genuinely ready for a safe GitHub update and Android APK release.
+
+This is an existing project improvement task.
+
+**Do NOT create a new application, replace the existing project with a generic starter app, or perform an unnecessary full-project rewrite.**
+
+Work with the actual source code currently available in this workspace.
+
+---
+
+# 1. PROJECT IDENTITY AND SOURCE OF TRUTH
+
+Application name: SAVII FOCUS
+
+Expected application ID: `com.savii.focus`
+
+Primary repository:
+`https://github.com/savinduhimesh5-del/SAVII-FOCUS-2`
+
+Historical repository:
+`SAVII-FOCUS-ANDROID`
+
+The current repository above is the primary project reference. Do not accidentally use the historical repository as the current source.
+
+Expected technology stack (verify against the actual project before changing anything):
+
+- Kotlin
+- Native Android development
+- Jetpack Compose
+- Material 3
+- Room database
+- ViewModel / MVVM architecture
+- Kotlin Coroutines and Flow
+- KSP
+- DataStore where appropriate
+- Gradle-based Android build
+
+Primary test device: Redmi Note 14.
+
+The application should work reliably on supported Android versions, with particular attention to the primary device.
+
+## Mandatory source verification
+
+Before editing:
+
+1. Inspect the actual project structure and source files.
+2. Identify the actual application module and its Gradle configuration.
+3. Inspect `settings.gradle.kts`, root `build.gradle.kts`, app-level `build.gradle.kts`, version catalogs if present, Gradle wrapper, AndroidManifest, Kotlin source packages, Room database, repositories, ViewModels, navigation, and tests.
+4. Determine whether the current workspace contains the actual SAVII FOCUS project or only a generic Android starter template.
+5. Determine whether the current source corresponds to the latest SAVII FOCUS implementation.
+6. Identify the actual Git branch and repository information if Git access is available.
+
+If the real project source is missing, do not invent its contents, pretend it was inspected, or recreate it from assumptions. Clearly report exactly what is missing and what access is needed.
+
+Do not claim that GitHub repository contents or GitHub Actions logs have been inspected unless you actually accessed them.
+
+**The actual source code is the source of truth. Previous AI-generated reports are investigation leads, not proof that something works.**
+
+---
+
+# 2. PREVIOUS IMPLEMENTATION AND HISTORICAL ISSUES
+
+The following changes were previously reported by an AI coding tool. Verify each claim against the actual source.
+
+### A. Original application architecture
+
+A previous implementation reportedly created:
+
+- Dashboard
+- Learning / Study subject management
+- Planner
+- Focus Timer
+- Insights
+- Settings
+- Room persistence
+- DataStore preferences
+- Navigation
+- Notifications
+
+Verify that these features genuinely exist, work together, and use a consistent architecture.
+
+### B. Historical startup/navigation bug
+
+A previous startup issue reportedly occurred because a sealed class companion object eagerly initialized a collection of nested data objects, resulting in null values caused by initialization order.
+
+The reported fix changed `AppDestination` to an enum with getter-backed `primaryTabs`.
+
+Verify:
+
+- Whether this exact issue is still present.
+- Whether the current navigation implementation is stable.
+- Whether any equivalent initialization-order problems remain.
+- Whether all navigation destinations are valid.
+- Whether navigation state survives normal recompositions and configuration changes where appropriate.
+- Whether switching tabs causes crashes, data loss, or unnecessary screen recreation.
+
+Do not reintroduce the previous bug.
+
+### C. Historical Focus Timer persistence bug
+
+A previous report mentioned a startup race condition in which a persisted RUNNING or PAUSED timer state could be overwritten by the default focus duration.
+
+Verify the complete timer lifecycle and ensure that:
+
+- Persisted timer state is restored before default values can overwrite it.
+- A RUNNING or PAUSED session is not accidentally reset when the application opens.
+- Countdown calculations remain accurate.
+- Pausing and resuming work correctly.
+- Resetting works correctly.
+- Backgrounding and reopening the app do not create incorrect timer states.
+- Completed sessions are saved only once.
+- Duplicate sessions are prevented.
+- Interrupted sessions are handled consistently.
+- Timer state and saved session history cannot become inconsistent.
+
+Use reliable time calculations rather than assuming that a simple decrementing counter remains accurate while the application is inactive.
+
+### D. Previous Room migration
+
+A previous Study implementation reportedly changed the Room database from version 1 to version 2 using a non-destructive `MIGRATION_1_2`.
+
+It reportedly added Study categories and AAT levels, and mapped old v1 subjects to A/L.
+
+Verify the actual migration code, database schema, entities, DAOs, relationships, and migration tests.
+
+Pay particular attention to this assumption:
+
+**Were all old v1 Learning subjects actually intended to become A/L subjects?**
+
+Do not blindly accept this mapping. Verify it against the old data model and intended application behaviour.
+
+Protect:
+
+- Existing subject IDs
+- Existing subject names
+- Existing subject data
+- Existing Planner task relationships
+- Existing Focus session relationships
+- Existing completion history
+- Existing user preferences where applicable
+
+Never use destructive migration merely to make a build pass.
+
+Do not silently delete, recreate, or overwrite an existing database.
+
+If an existing migration is unsafe, create a proper corrective migration and tests.
+
+### E. Previously reported Study implementation
+
+The latest report claimed:
+
+- Learning navigation label renamed to Study.
+- Existing navigation route and tag preserved.
+- Study overview showing active subjects, open tasks, and weekly focus information.
+- A/L, AAT, and OTHER categories.
+- A/L flat subject list.
+- AAT Level 1, Level 2, and Level 3 folders.
+- Separate subject collections for each AAT level.
+- Independent OTHER subjects.
+- Subject creation and management.
+- Subject icons, accent colours, and weekly focus goals.
+- Duplicate subject prevention within the same category or AAT level.
+- Category information displayed in Dashboard, Planner, Focus Timer, and Insights.
+- Database migration and regression tests.
+
+Treat all these as unverified claims until confirmed in the actual source.
+
+---
+
+# 3. FULL APPLICATION FEATURE REQUIREMENTS
+
+Audit the entire app, not only the recently changed Study feature.
+
+Preserve existing functionality unless a confirmed bug requires a targeted correction.
+
+## A. Dashboard
+
+Verify that the Dashboard accurately displays:
+
+- Total tasks
+- Completed tasks
+- Pending tasks
+- Today's focus time
+- Focus session count
+- Learning / Study overview
+- Useful quick actions
+
+Check calculation accuracy, date boundaries, empty states, refresh behaviour, and navigation actions.
+
+Dashboard values must come from real persisted data and must not become inconsistent with Planner, Study, or Focus Timer.
+
+## B. Study
+
+Study is the main learning-management area.
+
+It must have three main categories:
+
+### A/L
+
+- Use the existing subject-management system where possible.
+- Display a flat subject list.
+- Do not create unnecessary A/L level folders.
+- Support adding, editing, and deleting subjects.
+- Preserve existing subject relationships.
+
+### AAT
+
+Display three separate level folders:
+
+- Level 1
+- Level 2
+- Level 3
+
+Each level must have its own independent subject collection.
+
+Support adding, editing, and deleting subjects inside the appropriate level.
+
+A subject in Level 1 must not automatically appear in Level 2 or Level 3.
+
+The same subject name may exist in different AAT levels.
+
+### OTHER
+
+Maintain an independent subject collection for other learning activities.
+
+Do not mix OTHER subjects with A/L or AAT subjects.
+
+### Subject-management rules
+
+- Prevent duplicate subject names within the same category and scope.
+- Normalize whitespace and case when checking duplicates.
+- Allow the same name in different independent AAT levels.
+- Ensure category and level are saved correctly.
+- When adding a subject from inside a category or AAT level, automatically select the correct category and lock it where appropriate.
+- Editing an existing subject must preserve the correct category and level.
+- Deleting a subject must not accidentally delete unrelated tasks or sessions.
+- Use existing icon, colour, and weekly-goal systems where appropriate.
+- Validate empty names and invalid values.
+- Provide sensible empty, loading, and error states.
+
+### Study integrations
+
+Verify that Study data is properly integrated with:
+
+- Dashboard
+- Planner
+- Focus Timer
+- Insights
+
+A subject selected in Planner or Focus Timer must retain its correct category and AAT level.
+
+Insights must calculate data using the correct subject and category relationships.
+
+Avoid maintaining two separate systems for Learning and Study.
+
+Reuse and safely extend existing components and data structures.
+
+## C. Planner
+
+Verify:
+
+- Add task
+- Edit task
+- Delete task
+- Complete / uncomplete task
+- Search
+- Filter
+- Sorting
+- Priority
+- Due dates
+- Subject association
+- Category information
+- Persistence after restart
+- Correct empty and error states
+
+Check edge cases such as deleted subjects, overdue tasks, completed tasks, and tasks without subjects.
+
+Never associate a task with the wrong subject after database updates or migration.
+
+## D. Focus Timer
+
+Verify all available presets:
+
+- 15 minutes
+- 25 minutes
+- 45 minutes
+- 60 minutes
+
+Verify:
+
+- Start
+- Pause
+- Resume
+- Reset
+- Accurate countdown
+- Timer completion
+- Session history
+- Selected subject association
+- Persisted timer recovery
+- No duplicate session saving
+- Correct handling of application lifecycle events
+
+Do not introduce unnecessary background services or battery-draining mechanisms.
+
+Use the simplest reliable implementation appropriate for the application.
+
+## E. Insights
+
+Verify:
+
+- Today
+- Last 7 days
+- All-time statistics
+- Focus time
+- Completed tasks
+- Subject statistics
+- Category statistics
+
+Check date calculations, week boundaries, time zones, empty data, and consistency with actual stored records.
+
+Do not calculate statistics from hardcoded or temporary UI values.
+
+## F. Settings
+
+Verify:
+
+- Theme preferences
+- User preferences
+- Notification settings
+- Privacy information
+- About section
+- App version information
+- DataStore persistence
+
+Settings must remain consistent after restarting the application.
+
+Do not store sensitive information unnecessarily.
+
+---
+
+# 4. COMPLETE HISTORICAL BUG AUDIT — VERY IMPORTANT
+
+Do not limit bug investigation to Study or the latest implementation.
+
+Inspect the complete application and actively search for bugs introduced by earlier changes, hidden defects, incomplete implementations, and compatibility problems.
+
+Review all historical issues below and determine their current status.
+
+### Build and dependency issues
+
+- Invalid or unavailable dependency versions.
+- Android Gradle Plugin / Gradle incompatibility.
+- Kotlin / KSP incompatibility.
+- Compose compiler plugin configuration errors.
+- Room / KSP processing errors.
+- Incorrect Lifecycle dependencies or artifacts.
+- Incorrect Java or Kotlin JVM targets.
+- Missing Android SDK platforms or Build Tools.
+- Wrong module or namespace configuration.
+- Incorrect imports or package paths.
+- Manifest configuration mistakes.
+- Build configuration errors.
+- Version catalog inconsistencies.
+- CI environment differences.
+
+### Startup and navigation issues
+
+- Application startup crashes.
+- Initialization-order problems.
+- Invalid destination references.
+- Navigation state inconsistencies.
+- Incorrect back-stack behaviour.
+- Duplicate navigation destinations.
+- Missing or broken navigation routes.
+- Unnecessary screen recreation.
+
+### Database and data-integrity issues
+
+- Incorrect Room entities or relations.
+- Missing foreign keys or indexes where needed.
+- Unsafe migrations.
+- Incorrect DAO queries.
+- Incorrect update or delete operations.
+- Duplicate records.
+- Data races.
+- Missing transactions for related updates.
+- Incorrect subject/task/session relationships.
+- Data loss after restarting.
+- Database operations accidentally running on the main thread.
+- Database schema and exported schema mismatches.
+
+### ViewModel, Flow, and state issues
+
+- Incorrect state initialization.
+- Race conditions.
+- Incorrect coroutine scopes.
+- Unhandled exceptions.
+- Memory leaks.
+- Collecting flows without lifecycle awareness where needed.
+- State overwritten during recomposition.
+- Stale UI data.
+- Repeated database calls.
+- Incorrect loading and error state handling.
+
+### Planner and Study issues
+
+- Duplicate subject creation.
+- Incorrect AAT level association.
+- Incorrect category association.
+- Subject deletion affecting unrelated records.
+- Wrong task-subject mapping.
+- Incorrect filters and search.
+- Incorrect task completion status.
+- Weekly goal calculation errors.
+- Missing persistence.
+- UI state not matching Room data.
+
+### Focus Timer issues
+
+- Incorrect countdown.
+- Timer reset after reopening.
+- Session saved multiple times.
+- Timer state overwritten during startup.
+- Incorrect pause/resume behaviour.
+- Wrong session duration.
+- Incorrect subject association.
+- Lifecycle-related bugs.
+- Timer completion callbacks firing repeatedly.
+
+### Dashboard and Insights issues
+
+- Incorrect statistics.
+- Wrong date calculations.
+- Incorrect weekly totals.
+- Duplicate counting.
+- Stale values.
+- Inconsistent category totals.
+- Division-by-zero or empty-data errors.
+
+### UI and Android integration issues
+
+- Screen crashes.
+- Incorrect dialogs.
+- Buttons that do not work.
+- Broken scrolling.
+- Incorrect system bar handling.
+- Layout overflow on different screen sizes.
+- Keyboard hiding required controls.
+- Unnecessary recompositions.
+- Missing notification permission handling.
+- Notification channel errors.
+- Incorrect application lifecycle behaviour.
+- Dark theme contrast and readability problems.
+
+### GitHub Actions and release issues
+
+- Invalid workflow YAML.
+- Wrong workflow triggers.
+- Incorrect branch names.
+- Wrong JDK version.
+- Missing Android SDK setup.
+- Missing SDK packages.
+- Incorrect Gradle wrapper execution.
+- Incorrect build task.
+- Incorrect APK artifact path.
+- Missing artifact upload.
+- Unsafe workflow permissions.
+- Unpinned or inappropriate third-party actions where relevant.
+- CI build passing while local Gradle build fails, or vice versa.
+
+Inspect the whole source project, not just a few known files.
+
+Search for TODOs, FIXMEs, temporary implementations, placeholder screens, hardcoded values, unused code, suspicious exception handling, unsafe fallback logic, and unimplemented button actions.
+
+Do not assume that code works simply because it compiles.
+
+---
+
+# 5. VISUAL DESIGN AND USER EXPERIENCE
+
+The SAVII FOCUS application must maintain its existing visual identity.
+
+The preferred visual direction is:
+
+- Dark-purple Material 3 theme.
+- Existing SAVII FOCUS branding.
+- Consistent typography.
+- Consistent spacing and padding.
+- Consistent cards and dialogs.
+- Consistent icons.
+- Consistent navigation style.
+- Clean and readable layouts.
+- Native Android application feel.
+
+Before changing UI, inspect the actual existing screens and reusable components.
+
+The Study tab must look like a natural part of the existing SAVII FOCUS application.
+
+Do not copy an unrelated design concept or introduce a second design system.
+
+Do not unnecessarily change the entire application appearance.
+
+Check the UI on narrow and wider screens where possible.
+
+Provide appropriate:
+
+- Loading states
+- Empty states
+- Error states
+- Confirmation dialogs for destructive actions
+- Input validation
+- Touch target sizes
+- Accessibility descriptions where appropriate
+
+Preserve existing IDs, routes, and navigation tags when possible.
+
+Avoid large or unnecessary animations that could affect performance.
+
+---
+
+# 6. PERFORMANCE AND RESOURCE OPTIMIZATION
+
+Performance is a core requirement, not an optional improvement.
+
+The application will primarily be used on a Redmi Note 14, so prioritize reliability and smooth operation on a real Android device.
+
+Optimize for:
+
+1. Low RAM usage.
+2. Low CPU usage.
+3. Low battery consumption.
+4. Low mobile-data usage.
+5. Fast startup.
+6. Fast screen navigation.
+7. Smooth scrolling.
+8. Minimal unnecessary recompositions.
+9. Efficient database operations.
+10. Stable operation during long usage.
+
+Check:
+
+- Lazy layouts for long lists.
+- Stable keys where appropriate.
+- Efficient Compose state management.
+- Avoidable recompositions.
+- Unnecessary object creation.
+- Repeated database queries.
+- Large operations on the main thread.
+- Unnecessary coroutine launches.
+- Memory leaks.
+- Unnecessary background services.
+- Unnecessary network access.
+- Excessive polling.
+- Unnecessary dependencies.
+
+Keep the application offline-first.
+
+Core features such as Study, Planner, Focus Timer, and Insights should not require an internet connection unless an explicitly implemented feature requires it.
+
+Do not add large libraries or complex architecture without a clear technical reason.
+
+Do not sacrifice correctness or data integrity for small performance gains.
+
+Do not claim performance improvements were measured unless actual measurements were taken.
+
+---
+
+# 7. GRADLE, SDK, KOTLIN AND DEPENDENCY COMPATIBILITY
+
+Carefully inspect the entire build configuration.
+
+Verify:
+
+- Android Gradle Plugin version.
+- Gradle wrapper version.
+- Kotlin version.
+- KSP version.
+- Compose compiler plugin.
+- Compose BOM.
+- Room version.
+- Lifecycle dependencies.
+- Coroutines dependencies.
+- Other AndroidX dependencies.
+- Java version.
+- Kotlin JVM target.
+- `compileSdk`.
+- `targetSdk`.
+- `minSdk`.
+- Build Tools configuration.
+- Namespace.
+- Application ID.
+
+The project has previously been discussed with Java 17, Kotlin JVM target 17, `compileSdk = 36`, and `minSdk = 26`, but these values must be checked against the actual source and dependency requirements.
+
+Do not blindly copy these values if the real project requires something different.
+
+Research official Android, Kotlin, Gradle, AndroidX, and library documentation when a compatibility issue is uncertain.
+
+Do not invent dependency versions or use versions merely because they are the newest.
+
+Do not upgrade every dependency unnecessarily.
+
+Prefer a minimal, stable, compatible dependency configuration.
+
+Be especially careful with Lifecycle artifacts and other dependencies that may not exist under the assumed artifact name or version.
+
+Do not change namespace and package declarations without checking every affected source file, manifest entry, generated class, test, and build configuration.
+
+The expected application ID remains `com.savii.focus`, but the actual namespace must be verified.
+
+---
+
+# 8. ROOM DATABASE AND DATA SAFETY
+
+Treat existing user data as valuable.
+
+Before modifying the database:
+
+1. Inspect every entity.
+2. Inspect primary keys.
+3. Inspect foreign keys.
+4. Inspect relationships.
+5. Inspect DAO queries.
+6. Inspect database version.
+7. Inspect exported schemas.
+8. Inspect every existing migration.
+9. Determine whether migration paths are complete.
+
+Test migration from each supported previous schema version that exists in the project.
+
+Check that existing user data remains accessible after migration.
+
+Ensure that Study categories and AAT levels are stored consistently.
+
+Ensure that subject IDs remain stable unless a carefully justified migration requires otherwise.
+
+Do not use `fallbackToDestructiveMigration()` to hide migration failures.
+
+Do not silently clear the database to fix a test or build issue.
+
+Do not change a database version without providing the required migration strategy and tests.
+
+If a migration cannot be safely tested in the available environment, clearly identify that limitation.
+
+---
+
+# 9. SECURITY AND PRIVACY
+
+Inspect the complete project for:
+
+- Exposed API keys.
+- Tokens.
+- Passwords.
+- Secrets.
+- Sensitive hardcoded information.
+- Unnecessary permissions.
+- Unsafe logging.
+- Incorrect exported Android components.
+- Unnecessary network access.
+- Insecure storage practices.
+
+Do not put API keys or private credentials inside source code.
+
+Do not introduce unnecessary internet permissions or third-party tracking.
+
+Do not expose user study data unnecessarily.
+
+Do not remove legitimate permissions without checking the features that depend on them.
+
+---
+
+# 10. GITHUB ACTIONS AND REPOSITORY READINESS
+
+Inspect the GitHub workflow files if they are available.
+
+Verify:
+
+- Workflow YAML validity.
+- Workflow triggers.
+- Correct branch configuration.
+- JDK setup.
+- Android SDK setup.
+- Required SDK platform installation.
+- Required Build Tools installation.
+- Gradle wrapper usage.
+- Gradle caching.
+- Build task selection.
+- Unit-test task.
+- Lint task.
+- APK artifact path.
+- Artifact upload.
+- Workflow permissions.
+- Action versions and security practices.
+
+The workflow must match the actual project configuration.
+
+Do not claim the GitHub Actions workflow passed unless you actually ran it or accessed its real execution logs.
+
+If remote workflow logs are inaccessible, state that clearly.
+
+## Git safety
+
+Do not:
+
+- Force-push.
+- Delete branches.
+- Delete repository history.
+- Overwrite the repository with a generated project.
+- Commit unrelated changes.
+- Push unverified source code.
+- Publish a release without authorization.
+- Expose credentials or secrets.
+
+**Do not push, commit, merge, create a pull request, or publish a release unless I explicitly authorize that action.**
+
+Prepare the source for a safe GitHub update, but leave the final Git operation under my control.
+
+---
+
+# 11. TESTING AND VALIDATION — REQUIRED
+
+Do not stop after reviewing code or explaining possible issues.
+
+Fix confirmed bugs and perform actual validation using the tools available in the environment.
+
+First identify the actual Gradle project and module names.
+
+Use the appropriate real Gradle commands. If the application module is named `app`, the following commands are expected where supported:
+
+```bash
+./gradlew --version
+./gradlew projects
+./gradlew tasks --all
+./gradlew :app:testDebugUnitTest
+./gradlew :app:lintDebug
+./gradlew :app:assembleDebug
+./gradlew :app:check
+```
+
+Do not assume every task exists. Identify the correct available task names first.
+
+Run the relevant tests again after fixing bugs.
+
+Where possible, add or update tests for:
+
+- Application startup and navigation.
+- Study category handling.
+- A/L subject creation.
+- AAT Level 1, Level 2, and Level 3 isolation.
+- OTHER subject isolation.
+- Duplicate subject prevention.
+- Subject editing and deletion.
+- Room migration.
+- Planner operations.
+- Task-subject relationships.
+- Focus Timer persistence.
+- Timer pause and resume.
+- Duplicate session prevention.
+- Dashboard statistics.
+- Insights date calculations.
+
+Do not delete, disable, weaken, or bypass failing tests just to get a successful result.
+
+Do not ignore lint warnings without explaining why.
+
+If tests fail, investigate the actual root cause and fix it when safe.
+
+## Distinguish validation types
+
+Clearly distinguish:
+
+1. AI Studio preview or applet compilation.
+2. Actual Gradle compilation.
+3. Unit tests.
+4. Robolectric tests.
+5. Android lint.
+6. APK assembly.
+7. Instrumented tests.
+8. Emulator tests.
+9. Physical-device tests.
+10. GitHub Actions tests.
+
+Passing one type of validation does not prove all other types passed.
+
+If no emulator or physical device is available, state that actual device behaviour remains unverified.
+
+Do not fabricate test results, logs, APK paths, device tests, or GitHub results.
+
+---
+
+# 12. BUG FIXING METHOD
+
+Use a careful, evidence-based process.
+
+For every confirmed bug:
+
+1. Identify the affected file or component.
+2. Explain the actual technical cause.
+3. Determine the impact.
+4. Identify any related components.
+5. Implement the smallest safe correction.
+6. Add or update regression tests.
+7. Run the relevant validation again.
+8. Check that the correction did not break existing functionality.
+
+Classify findings as:
+
+- CRITICAL
+- HIGH
+- MEDIUM
+- LOW
+
+Prioritize data loss, crashes, incorrect database relationships, timer corruption, security problems, and build blockers.
+
+Do not make speculative changes just because a code pattern looks unusual.
+
+Do not rewrite a working system without technical justification.
+
+Do not change unrelated UI or architecture while fixing a small bug.
+
+If a bug cannot be fixed safely with the available source or tools, explain the blocker and provide the exact next action required.
+
+---
+
+# 13. IMPLEMENTATION WORKFLOW
+
+Follow these stages in order.
+
+### Stage 1 — Project inventory
+
+Inspect the actual project and report its structure, modules, package configuration, architecture, and build environment.
+
+### Stage 2 — Historical bug review
+
+Check every historical issue described in this prompt.
+
+Identify which issues are already fixed, which still exist, and which cannot be verified.
+
+### Stage 3 — Complete source audit
+
+Inspect every important application area: Dashboard, Study, Planner, Focus Timer, Insights, Settings, navigation, database, ViewModels, repositories, notifications, and Android integration.
+
+### Stage 4 — Study implementation verification
+
+Confirm that the A/L, AAT, and OTHER structure works correctly and is integrated into the whole app.
+
+Correct any incomplete or incorrect implementation.
+
+### Stage 5 — Bug fixing
+
+Fix confirmed bugs across the complete application, not just Study.
+
+Preserve existing functionality and existing user data.
+
+### Stage 6 — Performance and compatibility review
+
+Check resource usage, dependency compatibility, Gradle configuration, SDK settings, and application stability.
+
+### Stage 7 — Testing
+
+Run the relevant actual Gradle tasks and tests.
+
+Add regression tests for confirmed bugs where appropriate.
+
+### Stage 8 — GitHub readiness
+
+Inspect the workflow and repository configuration.
+
+Verify whether the project is ready for a safe update.
+
+Do not perform GitHub publishing actions without my explicit authorization.
+
+### Stage 9 — Final report
+
+Provide a complete, honest engineering report.
+
+Do not stop after Stage 1 or return only a list of suggestions. Continue through the available stages and perform the actual safe code corrections.
+
+If the environment prevents a stage, clearly report the limitation rather than pretending the stage was completed.
+
+---
+
+# 14. REQUIRED FINAL REPORT FORMAT
+
+At completion, provide the following report.
+
+## A. Overall status
+
+Choose one:
+
+- READY TO PUSH
+- NOT READY
+- PARTIALLY VERIFIED
+
+Explain the reason.
+
+## B. Project inspection
+
+Report:
+
+- Actual project and module structure.
+- Actual namespace and application ID.
+- Actual Gradle and Kotlin configuration.
+- Actual database version.
+- Important architectural findings.
+
+## C. Historical bug checklist
+
+For each historical bug, show:
+
+- Bug / issue.
+- Status: FIXED, ALREADY FIXED, STILL PRESENT, or NOT VERIFIABLE.
+- Evidence from source or test.
+- Relevant files.
+
+Do not mark an issue fixed merely because a previous AI report said it was fixed.
+
+## D. Newly discovered bugs
+
+For every newly discovered bug, show:
+
+- Severity.
+- Description.
+- Root cause.
+- Affected files.
+- Fix implemented.
+- Regression test added or updated.
+- Validation result.
+
+## E. Study verification
+
+Report whether:
+
+- A/L works.
+- AAT Level 1 works.
+- AAT Level 2 works.
+- AAT Level 3 works.
+- OTHER works.
+- Duplicate prevention works.
+- Subject editing and deletion work.
+- Existing subject relationships are preserved.
+- Dashboard integration works.
+- Planner integration works.
+- Focus Timer integration works.
+- Insights integration works.
+
+## F. Database safety
+
+Report:
+
+- Previous database version.
+- Current database version.
+- Migrations inspected.
+- Migration tests executed.
+- Existing-data preservation status.
+- Any unresolved data-safety concerns.
+
+## G. Build and test results
+
+Provide a table containing:
+
+| Check | Actual result | Details |
+|---|---|---|
+| Gradle version | | |
+| Project configuration | | |
+| Unit tests | | |
+| Robolectric tests | | |
+| Android lint | | |
+| Debug APK assembly | | |
+| Other relevant checks | | |
+
+Only report checks that were actually executed.
+
+## H. GitHub Actions
+
+Report:
+
+- Workflow files inspected.
+- Build configuration compatibility.
+- Test configuration.
+- APK artifact configuration.
+- Whether real GitHub workflow logs were accessed.
+- Remaining CI problems.
+
+## I. Performance and security
+
+Report confirmed problems, actual fixes, and anything that could not be measured or verified.
+
+## J. Files changed
+
+List the files changed and explain why each important change was necessary.
+
+## K. Remaining work
+
+Separate:
+
+- Issues that must be fixed before pushing.
+- Issues that can be handled later.
+- Manual actions required from me.
+- Physical-device checks still needed.
+
+## L. Final recommendation
+
+Clearly state whether I should safely proceed to the GitHub update.
+
+If not ready, identify the exact blockers.
+
+---
+
+# 15. NON-NEGOTIABLE RULES
+
+1. Work on the existing SAVII FOCUS project.
+2. Do not create a replacement application.
+3. Do not perform unnecessary full-project rewrites.
+4. Do not limit the audit to Study.
+5. Audit and fix historical bugs as well as newly discovered bugs.
+6. Preserve existing user data and database relationships.
+7. Do not use destructive database migration as a shortcut.
+8. Do not introduce unnecessary dependencies.
+9. Do not compromise low RAM, low data, battery efficiency, or smooth performance.
+10. Do not change the established SAVII FOCUS design unnecessarily.
+11. Do not remove working features to make tests pass.
+12. Do not hide failing tests, lint warnings, or build errors.
+13. Do not invent source files, test results, device tests, or GitHub results.
+14. Do not claim the app is bug-free.
+15. Do not push or publish anything without my explicit authorization.
+16. Explain technical decisions clearly and provide beginner-friendly instructions.
+17. Make targeted, evidence-based fixes and verify them.
+18. If an action is risky or could affect user data, inspect its consequences before making the change.
+19. Do not stop at an audit report when you can safely implement and verify the required fixes.
+20. Prioritize correctness, stability, data safety, and real-device reliability over adding new features.
+
+**FINAL OBJECTIVE:**
+
+Deliver the most stable, reliable, efficient, and well-tested version of the existing SAVII FOCUS application possible within the available environment.
+
+The goal is not simply to make the project compile. The goal is to make the whole application work correctly, preserve existing data, prevent historical bugs from returning, verify the Study system, and establish genuine readiness for a safe GitHub update and eventual use on my Redmi Note 14.
+
+Start by inspecting the actual current project. Then continue through the complete workflow and report only what you have genuinely verified.
